@@ -311,6 +311,13 @@ origin	https://github.com/[username]/myproject.git (push)
 
 然后，我们就可以将所有本地开发的内容推送到远程版本库：
 
+**git push**：将本地更改推送到远程仓库的命令，完整格式 ：git push <remote> <branch>
+
+- `<remote>` 是远程仓库的名称，通常是 "origin" 或其他你设置的别名。
+- `<branch>` 是本地分支的名称，它将被推送到远程仓库的同名分支。
+
+**--set-upstream**（或者简写为 -u）: 这部分告诉Git为本地分支与远程分支建立关联关系。关联关系的作用是在将来的推送或拉取操作中，Git会自动识别要使用的远程分支。设置关联关系后，你就可以使用`git push`和`git pull`而不需要每次都指定远程仓库和分支,只需输入 `git push`，Git 将自动使用关联的远程和分支。
+
 ```shell
 $ git push --set-upstream origin master
  
@@ -324,6 +331,7 @@ remote: Resolving deltas: 100% (17/17), done.
 To https://github.com/[username]/myproject.git
  * [new branch]      master -> master
 Branch 'master' set up to track remote branch 'master' from 'origin'.
+/*你的本地 master 分支现在已设置为跟踪远程仓库 'origin' 上的远程 master 分支*/
 ```
 
 现在，我们已将本地所有开发成果上传到远程版本库
