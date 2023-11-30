@@ -135,3 +135,30 @@ detail partition
 detail disk
 ```
 
+#### tmux
+
+终端复用工具
+
+```bash
+# 安装
+sudo apt install tmux
+# 在当前终端开一个tmux终端
+tmux
+# 退出tmux回到终端
+ctrl+b d
+# 新建一个新tmux并命令为ping
+tmux new -s ping
+# 查看有几个tmux
+tmux ls
+0: 1 windows (created Thu Nov 30 21:01:43 2023)
+ping: 1 windows (created Thu Nov 30 21:05:51 2023)
+# 回到tmux0
+tmux attach -t 0
+# 在tmux0中切换到tmux ping中
+tmux switch -t ping
+# 关掉tmux0
+tmux kill-seesion -t 0
+# 关掉tmux ping
+tmux kill-session -t ping
+```
+
