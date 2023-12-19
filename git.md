@@ -55,6 +55,8 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 #### 5.暂存新的改变到工作区
 
+在Git中，"暂存"（Staging）指的是将**工作目录中的修改或新文件添加到Git的索引中（也称为暂存区），以便随后commit这些更改**。暂存的主要目的是允许选择性地commit文件而不是全部文件的修改，通过使用暂存区，可以控制哪些修改被包含在下次commit中。
+
 在 git 中，每个文件都可能处于两个阶段中的一个：
 
 已跟踪--git 会主动监控该文件的任何更改，并将其作为 repo 的一部分
@@ -78,6 +80,12 @@ $ git commit -m "First release of Git Helloworld Project"
 ```shell
 git commit -a -m [commit message]
 ```
+
+`git tag` 用于给 Git 中的commit打上标签（tag），这些标签通常用于标识某个特殊的commit，比如软件版本发布。标签提供了一个稳定的引用，使得方便地回溯到某个特定的commit，常用的命令选项有
+
+- • `-a`：用于创建一个带注释的标签
+- • `-m`：指定标签的注释信息
+- • `-l`：列出已有的标签
 
 #### 7. Commit History
 
@@ -126,9 +134,23 @@ Switched to branch 'hello-world-image'
 $ git checkout -b hello-world-image
 ```
 
+删除分支
+
+```shell
+git branch -d <branch-name>
+```
+
+如果分支有未合并的更改，Git会拒绝删除，并提醒先合并或解决冲突。当然也可以强制删除分支，包括未合并的修改。
+
+```shell
+git branch -D <branch-name>
+```
+
+注意，无法删除主分支、当前所在分支或非分支的内容
+
 #### 10.Merge Branch
 
-假设我们对 hello-world-image 分支中的新开发非常满意，决定将其合并回主分支。
+`git merge` 是 Git 中用于合并不同分支的命令。**将两个或多个分支的历史和更改集成到一个新的commit中的过程**。合并操作通常用于将一个分支的变更合并到另一个分支，以确保这两个分支包含了相同的代码更改。假设我们对 hello-world-image 分支中的新开发非常满意，决定将其合并回主分支。注意master上是没有新提交的。
 
 既然要合并到主分支，我们首先要确保自己是站在主分支上的：
 
@@ -136,7 +158,7 @@ $ git checkout -b hello-world-image
 $ git checkout master
 Switched to branch 'master'
 
-# 使用merge合并分支
+# 使用merge合并分支，将指定分支中的更改合并到当前分支master
 $ git merge hello-world-image
 Updating 2daa287..c31a2c0
 Fast-forward
@@ -149,9 +171,9 @@ Fast-forward
 
 然而，生活并不总是一帆风顺。有时会发生合并冲突。
 
-假设现在我们回到 hello-world-image，在 index.html 中添加一行新内容。同时，我们在主分支中删除 index.html 中的一行，并在两个分支中都提交更改。
+假设现在我们回到 hello-world-image，在 index.html 中添加一行新内容。同时，我们在主分支中删除 index.html 中的一行，并在两个分支中都**提交更改**。
 
-现在，当我们尝试将此提交与主分支合并时，冲突就会发生：
+现在，当我们尝试将此提交与主分支合并时，这种叫做Three-way Merge，冲突就会发生：
 
 ```shell
 $ git merge hello-world-image
@@ -199,6 +221,18 @@ $ git branch -d hello-world-images
 Deleted branch hello-world-image (was 9e7a8ee).
 ```
 
+`--no-ff` 选项用于强制创建一个新的合并commit，即使可以执行快速前进合并，这样可以保留每个分支的独立历史
+
+```shell
+ git merge --no-ff <branch-name>
+```
+
+要执行Fast-forward 合并：
+
+```shell
+git merge --ff <branch-name>
+```
+
 #### 11.Revert
 
 revert 命令用于删除之前的提交，并将删除内容变成新的提交，而不修改日志。
@@ -222,7 +256,7 @@ $ git revert 9e7a8ee --no-edit
 
 #### 12.Reset
 
-reset 会将 repo 全部移回之前的提交，会删除该提交和最新版本之间的所有更改。
+用于将分支的 HEAD 指针和工作目录重置到指定的commit，可以选择是否保留未commit的更改，reset 会将 repo 全部移回之前的提交，会删除该提交和最新版本之间的所有更改。
 
 现在，假设我们添加了两个文件 file1.txt、file2.txt 和 file3.txt，并将它们包含在两个不同的提交中：
 
@@ -260,6 +294,14 @@ cf9f3bf Add file1
 ...(more)...
 ```
 
+reset其实有三个主要的选项：`--soft`、`--mixed` 和 `--hard`，对应于不同的重置模式
+
+git reset --soft <commit> ：回退 HEAD 指针到指定的commit，但保留所有的更改。**即不会修改工作目录或暂存区**，所有的更改都被标记为未commit的更改，可以直接重新commit
+
+git reset --mixed <commit>：**默认的reset模式**。回退 HEAD 指针到指定的commit，**并且重置暂存区**，**但保留工作目录中的更改**。**即未commit的更改会保留在工作目录，但不会被标记为暂存区的更改，需要重新`add`并commit**
+
+git reset --hard <commit>：**最彻底的reset模式**。回退 HEAD 指针到指定的commit，**重置暂存区，并删除工作目录中未commit的更改**，**慎用这个玩意，因为它会永久性地删除未commit的更改**
+
 #### 13.Amend
 
 commit --amend 可用于修改最近的提交，并交换更改其提交信息。
@@ -285,6 +327,49 @@ $ git log --oneline
 d4bf700 (HEAD -> master) Update: README.md (beautiful)
 327ae72 Add file3
 ...(more)...
+```
+
+#### 14.stash
+
+`git stash` **是一个用于保存当前工作目录和暂存区的临时状态的命令**。允许在切换分支、应用补丁或执行其他操作之前，将当前的修改存储起来，以便稍后重新应用，非常非常实用，常见的使用场景如
+
+- \1. 保存当前工作目录和暂存区的状态
+
+```shell
+git stash save "Work in progress"
+```
+
+- \2. 切换到其他分支进行操作
+
+```shell
+git checkout other-branch
+```
+
+- \3. 在其他分支进行操作
+
+```shell
+# 在 other-branch 上进行一些操作
+```
+
+- \4. 切回原始分支并恢复 `stash`
+
+```shell
+git checkout original-branch
+git stash apply
+```
+
+或者，如果想同时删除 `stash`，可以使用：
+
+```shell
+git stash pop
+```
+
+此外，还有一些其他常用命令
+
+```shell
+git stash list # 显示 Git 存储库中所有存储的列表，以及有关每个存储的一些信息
+
+git stash branch <branch-name> # 将更改应用到不同的分支
 ```
 
 ### 2.Git Remote
@@ -430,6 +515,21 @@ cf9f3bf Add file1
 ...(more)...
 ```
 
+`git pull` 和 `git fetch` 都是用于从远程仓库获取更新的 Git 命令，但区别为
+
+```
+git fetch origin
+```
+
+- • 从远程仓库获取更新的信息，**但并不自动合并或更新本地工作目录， 只是把远程分支的引用和相关对象（commit、tree等）下载到本地，需要手动合并或者在需要的时候将远程分支的变更整合到本地分支上**
+
+```
+git pull origin master
+```
+
+- • 从远程仓库获取更新的信息，**并尝试将本地工作目录自动合并到获取的更新中**
+- • `git pull` 实际上包含了 `git fetch`，比如在执行 `git fetch` 之后，立即执行 `git merge` 也可以将远程分支的更改合并到当前本地分支
+
 ### 3.推送本地新修改到远程
 
 现在，我们将通过 push 命令为远程仓库做出贡献。
@@ -487,7 +587,16 @@ $ git branch -r
   origin/secondary
 ```
 
+删除远程仓库中的分支
+
+```shell
+git push origin --delete <branch-name>
+```
+
+
+
 ### 5.将本地分支推送到远程
+
 我们也可以将本地新分支的变更推送到远程 repo。
 
 ```shell
