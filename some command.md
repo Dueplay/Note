@@ -448,25 +448,63 @@ strip 命令移除掉某个程序中的调试信息：在程序测试没问题�
 # 使用 gdb 启动一个程序进行调试，也就是说这个程序还没有启动
 gdb ./your_program
 
-# 设置命令行参数
+# 查看各个命令帮助
+help cmd
+
+# 设置命令行参数,单个命令行参数之间含有空格，可以使用引号将参数包裹起来
 set args arg1 arg2 arg3
+# 如果想清除掉已经设置好的命令行参数，使用 set args 不加任何参数即可
 # 也可以在启动时设置参数
 gdb --args ./your_program arg1 arg2 arg3
-
+#查看设置的命令行参数
+show args 
 #运行
 run # 简写r
 
-# 显示源代码
-list # 简写l，显示当前函数的源代码
+# 查看当前断点，当前执行语句附近的代码
+list # 简写l
+# 第一次输入 list 命令，会显示断点处前后的代码，继续输入 list指令会以递增行号的形式继续显示剩下的代码行，一直到文件结束为止。 list 指令可以往前和往后显示代码，命令分别是 list + 和 list - 
 
-# 开启TUI（Text User Interface）模式
-# GDB的TUI模式提供了一个文本界面，可以在调试时显示源代码、汇编代码、寄存器状态和GDB输出.使用Ctrl + X，然后按A可以在TUI模式和常规模式之间切换。在TUI模式中，可以使用方向键上下滚动代码,Ctrl + X,然后按o可在让焦点在源码和命令之前切换。
+# 开启TUI（Text User Interface）模式。GDB的TUI模式提供了一个文本界面，可以在调试时显示源代码、汇编代码、寄存器状态和GDB输出.
+1.gdbtui -q 需要调试的程序名
+2.直接使用 gdb 调试代码,使用Ctrl + X，然后按A可以在TUI模式和常规模式之间切换。在TUI模式中，可以使用方向键上下滚动代码,Ctrl + X,然后按o可在让焦点在源码和命令之前切换。
 layout src #显示源代码窗口,src,reg,asm
 
-# 打印变量
-p var
+src : the source window
+cmd : the command window
+asm : the disassembly window
+regs : the register display
+# 将代码窗口的高度扩大5行代码
+winheight src + 5
+# 将代码窗口的高度减小4代码
+winheight src - 4
+
+# print可以输出变量值，也可以输出特定表达式计算结果值，甚至可以输出一些函数的执行结果值
+p var # 打印变量的值。想输出该指针指向的对象的值，在变量名前面加上 * 解引用即可
+# 将这个错误码对应的文字信息打印出来
+p strerror(errno) 
+# 修改变量的值
+p i=1000
+# print 输出变量值时可以指定输出格式，命令使用格式如下：
+print /format variable
+
+format 常见的取值有：
+o octal 八进制显示
+x hex 十六进制显示
+d decimal 十进制显示
+# 输出一个变量的类型
+ptype variable
 # 使输出更易读
 set print pretty on # 关闭off
+
+#监视某一个变量或内存地址的值是否发生变化。发送变化时，gdb 就会中断下来。监视某个变量或者某个内存地址会产生一个“watch point”（观察点）。
+watch 变量名或内存地址
+# 需要注意的是：当设置的观察点是一个局部变量时。局部变量无效后，观察点也会失效
+
+# display 命令监视的变量或者内存地址，每次程序中断下来都会自动输出这些变量或内存的值
+display 变量名
+info display
+delete display 编号
 
 # 断点操作
 b [函数名] # eg: b main
@@ -477,7 +515,7 @@ b [文件名]:[行号] thread [线程ID] # 只有当指定的线程达到该断�
 
 # 列出所有断点
 info breakpoints # 简写info b
-# 禁用和启用断点
+# 禁用和启用断点，如果 disable 和 enable 命令不加断点编号，则分别表示禁用和启用所有断点
 disable [断点号]
 enable [断点号]
 
@@ -496,15 +534,64 @@ next # n
 
 #单步执行：执行下一行代码，如果是函数调用，则进入函数内部。
 step # s
+# 在这样的代码func3(func1(1, 2), func2(8, 9))输入s，会先进入哪个函数呢？
+# 函数调用方式，我们常用的函数调用方式有 __cdecl、__stdcall，C++ 的非静态成员函数的调用方式是__thiscall，这些调用方式，函数参数的传递本质上是函数参数的入栈的过程，而这三种调用方式参数的入栈顺序都是从右往左的，所以，这段代码中并没有显式标明函数的调用方式，所以采用默认__cdecl 方式。
+# 所以输入 step 先进入的是 func2()，当从 func2() 返回时再次输入step 命令会接着进入 func1()，当从 func1 返回时，此时两个参数已经计算出来了，这时候会最终进入 func3() 
+
+# 在某个函数中调试一会儿后，我们不需要再一步步执行到函数返回处，我们希望直接执行完当前函数并回到上一层调用处，
+finish  
+# 与 finish 命令类似的还有return 命令，return 命令作用是在当前位置结束当前函数的执行，并返回到上一层调用，还可以指定该函数的返回值。二者的区别：finish 命令会执行函数到正常退出该函数；而 return 命令是立即结束执行当前函数并返回，也就是说，如果当前函数还有剩余的代码未执行完毕，也不会执行了
+
+# 指定程序运行到某一行停下来
+until # 想直接跳到 2774 行，直接输入 u 2774
 
 
-# 查看函数调用栈
+# 查看当前所在线程的调用堆栈，能够知道调用层级关系
 backtrace # 简写bt
+# 切换到其他堆栈处
+frame 堆栈编号 # 简写f，编号不用加#
+# 查看当前函数的参数值
+info args
+
 # 换到不同的线程
 info threads # 查看当前所有的线程。每个线程都会有一个唯一的ID。
 # 切换线程，比如，要切换到线程ID为 2 的线程
 thread 2
 # 然后就可以使用 continue、next、step 和 finish 等命令控制线程的执行。这些命令会在当前选中的线程上执行。
+# 我们单步调试线程 A 时，我们不希望线程 A 函数中的值被其他线程改变。gdb 提供了一个在调试时将程序执行流锁定在当前调试线程的命令选项- scheduler-locking，这个选项有三个值，分别是 on、step 和 off，
+set scheduler-locking on/step/off
+# set scheduler-locking on 可以用来锁定当前线程，只观察这个线程的运行情况， 当锁定这个线程时， 其他线程就处于了暂停状态，也就是说你在当前线程执行 next、step、until、finish、return 命令时，其他线程是不会运行的。
+
+set scheduler-locking step 
+#也是用来锁定当前线程，当且仅当使用 next 或 step 命令做单步调试时会锁定当前线程，如果你使用 until、finish、return 等线程内调试命令，但是它们不是单步命令，所以其他线程还是有机会运行的。
+
+set scheduler-locking off #用于关闭锁定当前线程。
+
+
+# 调试多进程，这里说的多进程程序指的是一个进程使用 Linux 系统调用 fork 函数产生的子进程
+1.用 gdb 先调试父进程，等子进程被 fork 出来后，使用 gdb attach 到子进程上去
+2.gdb 调试器提供一个选项叫 follow-fork ，通过 set follow-fork mode 来设置是当一个进程 fork 出新的子进程时，gdb 是继续调试父进程（取值是 parent）还是子进程（取值是 child），默认是父进程（取值是 parent）
+
+# fork之后gdb attach到子进程
+set follow-fork child
+# fork之后gdb attach到父进程，这是默认值
+set follow-fork parent
+# 查看当前值
+show follow-fork mode
+
+# gcc/g++ 编译出来的可执行程序并不包含完整源码，-g 只是加了一个可执行程序与源码之间的位置映射关系，我们可以通过 dir 命令重新定位这种关系。
+dir SourcePath1:SourcePath2:SourcePath3 # 指定多个路径，使用:
+# dir 命令不加参数表示清空当前已设置的源码搜索目录
+dir
+# SourcePath1、SourcePath2、SourcePath3 指的就是需要设置的源码目录，gdb 会依次去这些目录搜索相应的源文件。
+
+# 将 print 显示的字符串或字符数组显示完整
+使用 print 命令打印一个字符串或者字符数组时，如果该字符串太长，print 命令默认显示不全的，我们可以通过在 gdb 中输入 set print element 0 设置一下，这样再次使用 print 命令就能完整地显示该变量所有字符串了。
+# 让被gdb调试的程序接收信号
+我们让程序在接收到 Ctrl + C 信号（对应信号值是 SIGINT）时简单打印一行信息，当我们用 gdb 调试这个程序时，由于 Ctrl + C 默认会被 gdb 接收到（让调试器中断下来），导致我们无法模拟程序接收这一信号。解决这个问题有两种方式：
+1. 在 gdb 中使用 signal 函数手动给我们的程序发送信号，这里就是 signal SIGINT 
+2. 改变 gdb 信号处理的设置，通过 handle SIGINT nostop print pass告诉 gdb 在接收到 SIGINT 时不要停止、并把该信号传递给调试目标程序 
+
 ```
 
 ##### 附加进程
