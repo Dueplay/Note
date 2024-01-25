@@ -456,6 +456,31 @@ socket 也是一种 fd，如果需要仅显示系统的网络连接信息，使�
 
 和 **netstat** 命令一样，**lsof -i** 默认也会显示 ip 地址（hostname）和端口号的别名，我们只要使用 **-n** 和 **-P** 选项就能相对应地显示 ip 地址和端口号了，综合起来就是 **lsof -Pni**
 
+#### find
+
+```shell
+# 按名称查找文件：在指定目录及其子目录中搜索名为 filename.txt 的文件。
+find /path/to/search -name filename.txt 
+
+# 按类型查找文件：
+find /path -type f 查找所有文件。
+find /path -type d 查找所有目录。
+
+# 按修改时间查找文件
+find /path -mtime +10 查找 10 天前修改的文件。
+find /path -mtime -10 查找最近 10 天内修改的文件。
+-mmin -10：搜索最近 10 分钟内修改的文件。
+
+# 按大小查找文件
+find /path -size +50M 查找大于 50 MB 的文件。
+在找到的文件上执行命令
+
+find /path -type f -exec rm {}\; 删除指定路径下的所有文件。
+将测试与逻辑操作符相结合：
+
+find /path \( -name "*.txt" -or -name "*.pdf" \) 查找所有 .txt 和 .pdf 文件。
+```
+
 #### tcpdump
 
 **tcpdump** 是 Linux 系统提供一个非常强大的抓包工具，对排查网络问题非常有用。使用之前需要安装
