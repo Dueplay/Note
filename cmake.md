@@ -1,6 +1,6 @@
 cmake 
 
-文件目录结构
+### 文件目录结构
 
 ```shell
 $ tree
@@ -325,12 +325,138 @@ CMAKE_BINARY_DIR			项目实际构建路径，假设在build目录进行的构�
 
 ```
 
-执行cmake
+### 执行cmake
 
 ```shell
 # 在CMakeLists.txt所在目录执行
 $ cmake .
 # 在build目录执行
 $ cmake ..
+```
+
+###  CMake 3.11 FetchContent模块
+
+`FetchContent` 是 CMake 3.11 及以上版本中引入的一个功能，它允许你在构建时自动从外部获取依赖项，而不需要手动下载或预先安装它们。
+
+#### 编写cmake：
+
+```cmake
+cmake_minimum_required(VERSION 3.14) # 确保使用了足够新的 CMake 版本
+
+project(MyProject VERSION 1.0)
+
+# 包含 FetchContent 模块
+include(FetchContent)
+
+# 声明 GoogleTest 作为外部依赖项
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.10.0 # GIT_TAG 参数可以是分支名或标签，不是必须的，但它是推荐的做法，不指定下载默认分支
+)
+
+# 使外部依赖项（GoogleTest）可用
+FetchContent_MakeAvailable(googletest)
+
+# 添加你的项目文件（替换为你的源文件）
+add_executable(my_project main.cpp)
+
+# 定义一个测试目标
+enable_testing()
+
+# 添加测试可执行文件
+add_executable(
+  my_test
+  tests/test1.cpp
+  tests/test2.cpp
+)
+
+# 链接 GoogleTest 到测试可执行文件
+target_link_libraries(
+  my_test
+  gtest_main
+)
+
+# 包含 GoogleTest 的测试
+include(GoogleTest)
+gtest_discover_tests(my_test)
+
+```
+
+在这个示例中：
+
+- 使用 `FetchContent_Declare` 声明了 GoogleTest 作为一个外部依赖项，指定了其 Git 仓库地址和要使用的标签（在这个例子中是 `release-1.10.0`）。
+- 通过 `FetchContent_MakeAvailable` 自动下载（如果需要的话）、配置和构建 GoogleTest。
+- 创建了两个可执行文件目标：一个是主项目 `my_project`，另一个是测试项目 `my_test`。
+- `my_test` 测试可执行文件链接了 GoogleTest，并使用 `gtest_discover_tests` 自动发现和注册 GoogleTest 测试。
+
+#### 第二步：编写测试
+
+在 `tests` 目录下创建测试文件（例如，`test1.cpp` 和 `test2.cpp`），并使用 GoogleTest 编写测试。
+
+#### 第三步：构建和运行测试
+
+1. 创建一个构建目录并进入：
+
+   ```bash
+   mkdir build && cd build
+   ```
+
+2. 使用 CMake 配置项目并构建：
+
+   ```bash
+   cmake --build .
+   ```
+
+3. 运行测试：
+
+   ```bash
+   ctest
+   ```
+
+   
+
+#### 使用catch2 v3.x版本的测试cmake
+
+```cmake
+cmake_minimum_required(VERSION 3.14) # 确保使用的是 FetchContent 可用的 CMake 版本
+
+project(MyProject VERSION 1.0)
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+# 包含 FetchContent 模块
+include(FetchContent)
+
+# 使用 FetchContent_Declare 声明 Catch2 作为外部依赖项
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v3.3.0 # or a later release
+)
+# 使 Catch2 可用
+FetchContent_MakeAvailable(Catch2)
+
+# 添加你的项目文件（示例）
+add_executable(my_project src/main.cpp src/sub.cpp)
+
+# 如果你有测试代码，可以像这样设置
+enable_testing() # 启用测试
+
+# 添加测试可执行文件
+add_executable(
+  my_test
+  test/test1.cpp
+  src/sub.cpp
+  # 添加其他测试文件
+)
+
+# 链接 Catch2 到测试可执行文件
+target_link_libraries(my_test PRIVATE Catch2::Catch2WithMain)
+
+# 为 Catch2 配置测试发现
+LIST(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(CTest)
+include(Catch)
+CATCH_DISCOVER_TESTS(my_test)
 ```
 
