@@ -14,7 +14,7 @@ syntax = "proto3"; // 版本
 // 相当于c++中的namespace
 package tutorial;
 
-// 当于c++中的class/struct
+// 相当于c++中的class/struct
 message Person {
     // optional 修饰符表明该字段可能被设置，也可能不被设置。当从未设置的字段中检索值时，return系统默认值，整数为0，字符串为空等。
     optional string name = 1;
