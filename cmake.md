@@ -85,6 +85,10 @@ include_directories(headpath)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 PROJECT_SOURCE_DIR宏对应的值就是我们在使用cmake命令时，后面紧跟的目录，一般是工程的根目录。
 
+// 找到必要库
+find(xxx required) // 根据cmake/module/findxxx.cmake找
+// 找不到可以需要添加findxxx.cmake
+
 # 制作动态库或静态库，源代码并不需要将他们编译生成可执行程序，而是生成一些静态库或动态库提供给第三方使用，下面来是在cmake中生成这两类库文件的方法。
 # 在cmake中，如果要制作静态库，需要使用的命令如下：静态库名字分为三部分：lib+库名字+.a，此处只需要指定出库的名字就可以了
 add_library(库名称 STATIC 源文件1 [源文件2] ...) 

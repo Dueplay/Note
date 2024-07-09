@@ -23,7 +23,7 @@ $ git config user.name
 Dueplay
 $ git config user.email
 2289535823@qq.com
-$ git conig user.password
+$ git config user.password
 hello123
 ```
 
