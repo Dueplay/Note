@@ -544,6 +544,7 @@ sudo apt install lsof
 默认情况下，**lsof** 的输出比较多，我们可以使用 grep 命令过滤我们想要查看的进程打开的 fd 信息，如：
 
 ```shell
+lsof -i -Pn | grep xxx
 lsof -i | grep process
 ```
 
