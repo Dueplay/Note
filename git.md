@@ -24,7 +24,7 @@ Dueplay
 $ git config user.email
 2289535823@qq.com
 $ git config user.password
-hello123
+xxx
 ```
 
 #### 3. Initialize Git
@@ -528,7 +528,7 @@ git pull origin master
 ```
 
 - • 从远程仓库获取更新的信息，**并尝试将本地工作目录自动合并到获取的更新中**
-- • `git pull` 实际上包含了 `git fetch`，比如在执行 `git fetch` 之后，立即执行 `git merge` 也可以将远程分支的更改合并到当前本地分支
+- • `git pull` 实际上包含了 `git fetch`，在执行 `git fetch` 之后，立即执行 `git merge` 也可以将远程分支的更改合并到当前本地分支
 
 ### 3.推送本地新修改到远程
 
