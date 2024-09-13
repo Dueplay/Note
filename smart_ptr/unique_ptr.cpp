@@ -55,7 +55,10 @@ private:
 };
 
 }
-
+template<typename T, typename... Args>
+unique_ptr<T> make_unique_ptr(Args&&... args) {
+    return unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 int main(int argc, const char *argv[]) {
     /* polymorphism */
